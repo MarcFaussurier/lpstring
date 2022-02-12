@@ -1,17 +1,22 @@
 ---
+asprintf:
+-- o Wo
+indexof(W): 2
+TOTAL:	18850
+---
 lpstr:
-8785	Init + append !
-5439	Substr !
+6157	Init + append !
+382	Substr !
 p: 4 str: [o Wo]
 indexof: W: 2
-4529	to C + find + freeing!
-TOTAL:	18616
+1752	to C + find + freeing!
+TOTAL:	8159
 --------------
 std::string:
 
-3305	Init + append !
-1180	Substr !
+3071	Init + append !
+1120	Substr !
 p: 4 str: [o Wo]
 indexof: W: 2
-7150	to C + find + freeing!
-TOTAL:	11502
+6745	to C + find + freeing!
+TOTAL:	10805

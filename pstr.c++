@@ -252,9 +252,28 @@ uint64_t nanos()
 
 int main()
 {
-	cout << "---\nlpstr:\n";
+	cout << "---\nasprintf:\n";
+
+	char *as;
+	size_t	i;
 	auto ns = nanos();	
 	auto total = 0;
+	char	*swp;
+
+	asprintf(&as, "%s%s%s", "Hello", " World!", " DHJWHDAWHDIWHDIWAJDHIWAJD");
+	swp = as;
+	asprintf(&as, "%.4s", as + 4);
+	printf("-- %s\n", as);
+	i = (int) (strchr(as, ('W')) - as);
+	printf("indexof(W): %i\n", i);
+	free(as);
+	free(swp);
+	total += nanos() - ns;
+	cout << "TOTAL:\t" << total << endl;
+	total = 0;
+	cout << "---\nlpstr:\n";
+	 ns = nanos();	
+	total = 0;
 	t_lpstr *l1 = lpstr_new(STR("Hello"));
 	t_lpstr *l2 = lpstr_new(STR(" World!"));
 	t_lpstr *l3 = lpstr_new(STR(" DHJWHDAWHDIWHDIWAJDHIWAJD"));
