@@ -1,0 +1,17 @@
+---
+lpstr:
+8785	Init + append !
+5439	Substr !
+p: 4 str: [o Wo]
+indexof: W: 2
+4529	to C + find + freeing!
+TOTAL:	18616
+--------------
+std::string:
+
+3305	Init + append !
+1180	Substr !
+p: 4 str: [o Wo]
+indexof: W: 2
+7150	to C + find + freeing!
+TOTAL:	11502

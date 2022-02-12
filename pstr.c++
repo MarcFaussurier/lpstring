@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define STR(X) (t_pstr) {.s=X, .p=sizeof(X) - 1}
+#define STR(X) (t_pstr) {.p=sizeof(X) - 1, .s=X, }
 
 typedef struct s_pstr
 {
@@ -13,7 +13,7 @@ typedef struct s_pstr
 typedef struct s_lpstr	
 {
 	size_t			p;
-	char *const		os;
+	char 			*os;
 	char			*s;
 	struct s_lpstr	*next;
 	struct s_lpstr	*prev;
@@ -24,10 +24,10 @@ t_lpstr	*lpstr_new(t_pstr pstr)
 {
 	t_lpstr	*o;
 
-	o = malloc(sizeof(t_lpstr));
+	o = (t_lpstr*) malloc(sizeof(t_lpstr));
 	if (!o)
 		return (0);
-	*o = (t_lpstr) {pstr.p, malloc((pstr.p * sizeof(char) + 1)), 0, 0, 0, o};
+	*o = (t_lpstr) {pstr.p, (char*) malloc((pstr.p * sizeof(char) + 1)), pstr.s, 0, 0, o};
 	if (!o->os)
 	{
 		free(o);
@@ -56,15 +56,15 @@ size_t	lpstr_len(t_lpstr *l)
 	return (i);
 }
 
-t_lpstr	*lpstr_join(t_lpstr **dest, t_lpstr *new)
+t_lpstr	*lpstr_join(t_lpstr **dest, t_lpstr *n)
 {
 	t_lpstr	*last;
 
-	if (!new)
+	if (!n)
 		return (*dest);
 	if (!*dest)
 	{
-		*dest = lpstr_new((t_pstr){.s=new->s, .p=new->p});
+		*dest = lpstr_new((t_pstr){.p=n->p, .s=n->s});
 		return (*dest);
 	}
 	last = *dest;
@@ -74,7 +74,7 @@ t_lpstr	*lpstr_join(t_lpstr **dest, t_lpstr *new)
 			last = last->next;
 		else
 		{
-			last->next = lpstr_new((t_pstr){.s=new->s, .p=new->p});
+			last->next = lpstr_new((t_pstr){.p = n->p, .s=n->s});
 			last->next->prev = last;
 			if (!last->next)
 				return (0);
@@ -143,7 +143,7 @@ t_pstr	lpstr_pstr(t_lpstr *l)
 	size_t	y;
 
 	pstr.p = lpstr_len(l);
-	pstr.s = malloc( (pstr.p + 1) * sizeof(char));
+	pstr.s = (char*) malloc( (pstr.p + 1) * sizeof(char));
 	if (!pstr.s)
 		return (pstr);
 	i = 0;
@@ -238,27 +238,76 @@ int	is(char c)
 	return (c == 'W');
 }
 
+#include <chrono>
+#include <iostream>
+
+using namespace std;
+
+uint64_t nanos()
+{
+    uint64_t ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::
+                  now().time_since_epoch()).count();
+    return ns; 
+}
+
 int main()
 {
-
-
+	cout << "---\nlpstr:\n";
+	auto ns = nanos();	
+	auto total = 0;
 	t_lpstr *l1 = lpstr_new(STR("Hello"));
 	t_lpstr *l2 = lpstr_new(STR(" World!"));
-
-
+	t_lpstr *l3 = lpstr_new(STR(" DHJWHDAWHDIWHDIWAJDHIWAJD"));
 	lpstr_join(&l1, l2);
+	lpstr_join(&l1, l3);
 
-
-	printf("size: %zu\nlen: %zu\n", l1->p, lpstr_len(l1));
+	total += nanos() - ns;
+	cout << nanos() - ns << "\tInit + append !\n";
+	ns = nanos();	
 
 	lpstr_trim(&l1,  4,4);
 
+
+	total += nanos() - ns;
+	cout << nanos() - ns << "\tSubstr !\n";
+	ns = nanos();	
+
 	t_pstr pstr = lpstr_pstr(l1);
 	printf("p: %zu str: [%s]\n", pstr.p, pstr.s);
-	
 	printf("indexof: W: %zu\n", lpstr_chr(l1, &is));
-
 	free(pstr.s);
 	lpstr_free(&l1);
 	lpstr_free(&l2);
+	lpstr_free(&l3);
+
+	total += nanos() - ns;
+	cout << nanos() - ns << "\tto C + find + freeing!\n";
+	cout << "TOTAL:\t" << total << endl;
+	total = 0;
+	cout << "--------------\nstd::string:\n" << endl;
+	ns = nanos();	
+	
+	auto s1 = std::string("Hello");
+	auto s2 = std::string(" World!");
+	auto s3 = std::string(" DHJWHDAWHDIWHDIWAJDHIWAJD");
+	s1 = s1.append(s2);
+	s1 = s1.append(s3);
+
+	total += nanos() - ns;
+	cout << nanos() - ns << "\tInit + append !\n";
+	ns = nanos();	
+
+	s1 = s1.substr(4, 4);
+
+	total += nanos() - ns;
+	cout << nanos() - ns << "\tSubstr !\n";
+	ns = nanos();	
+
+	auto cs = s1.c_str();
+	printf("p: %zu str: [%s]\n", strlen(cs), cs);
+	printf("indexof: W: %zu\n", s1.find("W"));
+
+	total += nanos() - ns;
+	cout << nanos() - ns << "\tto C + find + freeing!\n";
+	cout << "TOTAL:\t" << total << endl;
 }
